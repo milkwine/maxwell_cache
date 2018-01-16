@@ -7,7 +7,7 @@ defmodule MaxwellCache.Mixfile do
       version: "0.0.1",
       elixir: "~> 1.5",
       start_permanent: Mix.env == :prod,
-      deps: deps()
+      deps: deps(),
       description: description(),
     ]
   end
