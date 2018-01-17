@@ -2,8 +2,8 @@ defmodule MaxwellCache.Application do
 
   use Application
 
-  @default_limit %Cachex.Limit{ limit: 2000, reclaim: 0.1 }
-  @default_ttl :timer.minutes(3)
+  @default_limit %Cachex.Limit{limit: 2000, reclaim: 0.1}
+  @default_ttl :timer.seconds(10)
 
   def start(_type, _args) do
     import Supervisor.Spec

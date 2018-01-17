@@ -19,8 +19,12 @@ defmodule Maxwell.Middleware.Cache do
     "#{conn.method}|#{conn.url}|#{conn.path}|#{query_string}|#{headers}|#{body}"
   end
 
-  def call(conn, next, {namespace, hash_func, ttl}) do
-    key = namespace <> "#" <> hash_func.(conn)
+
+  def call(conn = %Maxwell.Conn{private: %{from_cache: true}}, next, {namespace, hash_func, ttl}) do
+
+    ttl = Map.get(conn.private, :ttl, ttl)
+    key = pk(conn, namespace, hash_func)
+
     case Cachex.get(:maxwell_cache_cachex, key) do
       {:ok, {resp_body, resp_headers}} ->
         %{conn | status:        200,
@@ -34,6 +38,21 @@ defmodule Maxwell.Middleware.Cache do
         |> set_cache(key, ttl)
     end
   end
+
+  def call(conn = %Maxwell.Conn{private: %{from_source: true}}, next, {namespace, hash_func, ttl}) do
+
+    ttl = Map.get(conn.private, :ttl, ttl)
+    key = pk(conn, namespace, hash_func)
+
+    conn
+    |> next.()
+    |> set_cache(key, ttl)
+
+  end
+
+  def call(conn = %Maxwell.Conn{}, next, _opts), do: next.(conn)
+
+  defp pk(conn, namespace, hash_func), do: namespace <> "#" <> hash_func.(conn)
 
   defp set_cache(conn=%Maxwell.Conn{status: status}, key, ttl) when status == 200 do
     value = {conn.resp_body, conn.resp_headers}
