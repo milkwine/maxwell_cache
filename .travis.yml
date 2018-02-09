@@ -1,0 +1,15 @@
+language: elixir
+elixir:
+  - 1.4.5
+  - 1.5.3
+  - 1.6.1
+otp_release:
+  - 19.2
+  - 20.2
+
+sudo: false
+
+before_script:
+  - MIX_ENV=test mix do deps.get
+script:
+  - MIX_ENV=test mix test

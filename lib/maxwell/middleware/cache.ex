@@ -3,6 +3,9 @@ defmodule Maxwell.Middleware.Cache do
   alias Maxwell.Conn
 
   @default_namespace "default"
+  @pri_from_cache    :MIDDLE_CACHE_from_cache
+  @pri_from_source   :MIDDLE_CACHE_from_source
+  @pri_ttl           :MIDDLE_CACHE_ttl
 
   def init(opts) do
     namespace = opts[:namespace] || @default_namespace
@@ -11,6 +14,31 @@ defmodule Maxwell.Middleware.Cache do
     {namespace, hash_func, ttl}
   end
 
+  @doc """
+  Make this requrest get response from cache first.
+  """
+  def from_cache(%Maxwell.Conn{} = conn) do
+    Maxwell.Conn.put_private(conn, @pri_from_cache, true)
+  end
+
+  @doc """
+  Make this requrest get response from remote server and set cache.
+  """
+  def from_source(%Maxwell.Conn{} = conn) do
+    Maxwell.Conn.put_private(conn, @pri_from_source, true)
+  end
+
+  @doc """
+  Set ttl to cache the request.
+  """
+  def set_ttl(%Maxwell.Conn{} = conn, ttl) do
+    Maxwell.Conn.put_private(conn, @pri_ttl, ttl)
+  end
+
+  @doc """
+  Default hash function. Generate a key from `conn` to get/store response from/to cache.
+  Can be replaced by user defined function by pass `:hash_func` to `init/1`.
+  """
   def default_hash_func(%Maxwell.Conn{} = conn) do
     query_string = conn.query_string |> Maxwell.Query.encode
     headers      = conn.req_headers  |> Maxwell.Query.encode
@@ -20,9 +48,9 @@ defmodule Maxwell.Middleware.Cache do
   end
 
 
-  def call(conn = %Maxwell.Conn{private: %{from_cache: true}}, next, {namespace, hash_func, ttl}) do
+  def call(conn = %Maxwell.Conn{private: %{@pri_from_cache => true}}, next, {namespace, hash_func, ttl}) do
 
-    ttl = Map.get(conn.private, :ttl, ttl)
+    ttl = Map.get(conn.private, @pri_ttl, ttl)
     key = pk(conn, namespace, hash_func)
 
     case Cachex.get(:maxwell_cache_cachex, key) do
@@ -39,9 +67,9 @@ defmodule Maxwell.Middleware.Cache do
     end
   end
 
-  def call(conn = %Maxwell.Conn{private: %{from_source: true}}, next, {namespace, hash_func, ttl}) do
+  def call(conn = %Maxwell.Conn{private: %{@pri_from_source => true}}, next, {namespace, hash_func, ttl}) do
 
-    ttl = Map.get(conn.private, :ttl, ttl)
+    ttl = Map.get(conn.private, @pri_ttl, ttl)
     key = pk(conn, namespace, hash_func)
 
     conn
