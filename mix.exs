@@ -7,6 +7,11 @@ defmodule MaxwellCache.Mixfile do
       version: "0.1.0",
       elixir: "~> 1.4",
       start_permanent: Mix.env == :prod,
+      package: %{
+        licenses: ["MIT"],
+        maintainers: ["milkwine"],
+        links: %{"GitHub" => "https://github.com/milkwine/maxwell_cache"}
+      },
       deps: deps(),
       description: description(),
     ]
@@ -34,6 +39,7 @@ defmodule MaxwellCache.Mixfile do
       {:maxwell, "~> 2.2"},
       {:ibrowse, "~> 4.2",          only: [:test]},
       {:poison, "~> 2.1 or ~> 3.0", only: [:test]},
+      {:ex_doc, ">= 0.0.0", only: [:dev]},
     ]
   end
 end
