@@ -32,7 +32,7 @@ defmodule CacheTest do
       "/uuid"
       |> new()
       |> from_cache()
-      |> set_ttl(:timer.seconds(5))
+      |> set_ttl(:timer.seconds(4))
       |> get!
       |> get_resp_body
     end
