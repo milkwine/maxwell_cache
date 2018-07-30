@@ -10,7 +10,7 @@ Add `maxwell_cache` to your list of dependencies in `mix.exs`:
 ```elixir
 def deps do
   [
-    {:maxwell_cache, git: "https://github.com/milkwine/maxwell_cache"},
+    {:maxwell_cache, ~> 0.1.0"},
   ]
 end
 ```
